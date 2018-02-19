@@ -1,0 +1,10 @@
+.classpath
+.gitignore
+.idea/
+.project
+.settings
+*.jar
+*.class
+
+hybris-b2c-e2e.iml
+target/
