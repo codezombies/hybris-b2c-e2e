@@ -1,9 +1,15 @@
 package com.codingzombies.support.ui;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.UnsupportedCommandException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -11,7 +17,9 @@ import org.openqa.selenium.WebElement;
 import com.codingzombies.support.EnhancedWebDriver;
 import com.codingzombies.support.Selector;
 
-public class Component {
+import ru.yandex.qatools.ashot.AShot;
+
+public class Component implements CanTakeScreenshot {
     
     protected final EnhancedWebDriver driver;
     private final WebElement delegate;
@@ -50,8 +58,19 @@ public class Component {
         return this.delegate.getText();
     }
     
-    public <X> X getScreenshotAs(OutputType<X> target) throws WebDriverException {
-        return delegate.getScreenshotAs(target);
+    public File getScreenshot() throws WebDriverException {
+        try {
+            return delegate.getScreenshotAs(OutputType.FILE);
+        } catch (UnsupportedCommandException e) {
+            BufferedImage image = new AShot().takeScreenshot(this.driver, this.delegate).getImage();
+            try {
+                File temp = File.createTempFile("comp", "screenshot");
+                ImageIO.write(image, "png", temp);
+                return temp;
+            } catch (IOException io) {
+                throw new RuntimeException(io);
+            }
+        }
     }
     
 }

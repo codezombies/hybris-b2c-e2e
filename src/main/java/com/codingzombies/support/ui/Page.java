@@ -1,12 +1,15 @@
 package com.codingzombies.support.ui;
 
+import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -15,7 +18,7 @@ import com.codingzombies.support.EnhancedWebDriver;
 import com.codingzombies.support.PageFactory;
 import com.codingzombies.support.Selector;
 
-public abstract class Page<T extends PageTemplate> {
+public abstract class Page<T extends PageTemplate> implements CanTakeScreenshot {
 
     protected EnhancedWebDriver driver;
     public T template;
@@ -73,4 +76,7 @@ public abstract class Page<T extends PageTemplate> {
         return driver.getJavascript();
     }
     
+    public File getScreenshot() throws WebDriverException {
+        return driver.getScreenshotAs(OutputType.FILE);
+    }
 }

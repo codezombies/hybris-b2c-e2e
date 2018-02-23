@@ -7,24 +7,27 @@ import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-public class EnhancedWebDriver implements WebDriver, JavascriptExecutor {
+public class EnhancedWebDriver implements WebDriver, JavascriptExecutor, TakesScreenshot {
 
     final WebDriver delegate;
     final WebDriverWait wait;
     final Actions actions;
     final JavascriptExecutor javascript;
 
-    EnhancedWebDriver(WebDriver driver) {
+    public EnhancedWebDriver(WebDriver driver) {
         this.delegate = driver;
         this.wait = new WebDriverWait(driver, 5);
         this.actions = new Actions(driver);
-        this.javascript = (JavascriptExecutor)driver;
+        this.javascript = (JavascriptExecutor) driver;
 
         // set timeouts TODO - move to a different config location
         Timeouts timeouts = driver.manage().timeouts();
@@ -45,7 +48,7 @@ public class EnhancedWebDriver implements WebDriver, JavascriptExecutor {
         WebElement element = delegate.findElement(Selector.$by(selector));
         return transform(clazz, element);
     }
-    
+
     public WebElement $(SearchContext context, String selector) {
         return $(context, selector, WebElement.class);
     }
@@ -63,22 +66,22 @@ public class EnhancedWebDriver implements WebDriver, JavascriptExecutor {
         List<WebElement> elements = delegate.findElements(Selector.$by(selector));
         return elements.stream().map(element -> transform(clazz, element)).collect(Collectors.<T>toList());
     }
-    
+
     public List<WebElement> $$(SearchContext context, String selector) {
         return $$(context, selector, WebElement.class);
     }
-    
+
     public <T> List<T> $$(SearchContext context, String selector, Class<T> clazz) {
         List<WebElement> elements = context.findElements(Selector.$by(selector));
         return elements.stream().map(element -> transform(clazz, element)).collect(Collectors.<T>toList());
     }
-    
+
     private <T> T transform(Class<T> clazz, WebElement element) {
         return ClassSupport.newInstance(clazz, delegate, element);
     }
 
     public String getTitle() {
-       return this.delegate.getTitle();
+        return this.delegate.getTitle();
     }
 
     public WebDriver getDriver() {
@@ -159,12 +162,20 @@ public class EnhancedWebDriver implements WebDriver, JavascriptExecutor {
 
     @Override
     public Object executeAsyncScript(String script, Object... args) {
-        return ((JavascriptExecutor)delegate).executeAsyncScript(script, args);
+        return ((JavascriptExecutor) delegate).executeAsyncScript(script, args);
     }
-    
+
     @Override
     public Object executeScript(String script, Object... args) {
-        return ((JavascriptExecutor)delegate).executeScript(script, args);
+        return ((JavascriptExecutor) delegate).executeScript(script, args);
     }
-    
+
+    @Override
+    public <X> X getScreenshotAs(OutputType<X> target) throws WebDriverException {
+        if (delegate instanceof TakesScreenshot) {
+            return ((TakesScreenshot) delegate).getScreenshotAs(target);
+        }
+        throw new UnsupportedOperationException("driver does not support taking screenshots");
+    }
+
 }

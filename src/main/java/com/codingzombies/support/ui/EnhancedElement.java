@@ -1,5 +1,7 @@
 package com.codingzombies.support.ui;
 
+import java.io.File;
+
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -7,7 +9,7 @@ import org.openqa.selenium.WebElement;
 
 import com.codingzombies.support.EnhancedWebDriver;
 
-public class EnhancedElement {
+public class EnhancedElement implements CanTakeScreenshot {
 
     protected final EnhancedWebDriver driver;
     protected final WebElement delegate;
@@ -18,8 +20,8 @@ public class EnhancedElement {
         this.delegate = delegate;
     }
 
-    public <X> X getScreenshotAs(OutputType<X> target) throws WebDriverException {
-        return delegate.getScreenshotAs(target);
+    public File getScreenshot() throws WebDriverException {
+        return delegate.getScreenshotAs(OutputType.FILE);
     }
 
     public void click() {
@@ -30,4 +32,5 @@ public class EnhancedElement {
     public <T> T $js(String script, Object... args) {
         return (T) this.driver.getJavascript().executeScript(script, args);
     }
+
 }

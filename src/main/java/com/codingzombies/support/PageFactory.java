@@ -17,7 +17,7 @@ public final class PageFactory {
         org.openqa.selenium.support.PageFactory.initElements(new PageFieldDecorator(driver), template);
         return template;
     }
-    
+
     public static <T extends PageTemplate, P extends Page<T>> P newPage(WebDriver driver, Class<P> clazz) {
         driver = decorate(driver);
         P page = instantiateType(driver, clazz);
@@ -33,12 +33,12 @@ public final class PageFactory {
     }
 
     private static WebDriver decorate(WebDriver driver) {
-        if(driver instanceof EnhancedWebDriver) {
+        if (driver instanceof EnhancedWebDriver) {
             return driver;
         }
         return new EnhancedWebDriver(driver);
     }
-    
+
     private static <T> T instantiateComponent(WebDriver driver, WebElement element, Class<T> pageClassToProxy) {
         try {
             try {
@@ -51,7 +51,7 @@ public final class PageFactory {
             throw new RuntimeException(e);
         }
     }
-    
+
     private static <T> T instantiateType(WebDriver driver, Class<T> pageClassToProxy) {
         try {
             try {
