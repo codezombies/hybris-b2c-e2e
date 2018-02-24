@@ -13,4 +13,8 @@ public class Link extends EnhancedElement {
         return this.delegate.getAttribute("href");
     }
 
+    public String getText() {
+        return this.delegate.getText();
+    }
+
 }

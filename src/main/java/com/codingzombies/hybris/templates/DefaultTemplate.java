@@ -8,7 +8,7 @@ import com.codingzombies.hybris.components.MiniCart;
 import com.codingzombies.hybris.components.Navigation;
 import com.codingzombies.support.Find;
 import com.codingzombies.support.ui.Image;
-import com.codingzombies.support.ui.InputButton;
+import com.codingzombies.support.ui.Button;
 import com.codingzombies.support.ui.InputSearch;
 import com.codingzombies.support.ui.Link;
 import com.codingzombies.support.ui.PageTemplate;
@@ -25,7 +25,7 @@ public class DefaultTemplate extends PageTemplate {
     public InputSearch searchInput;
 
     @Find(".js_search_button")
-    public InputButton searchButton;
+    public Button searchButton;
 
     @Find(".nav__links--account a")
     public Link signIn;

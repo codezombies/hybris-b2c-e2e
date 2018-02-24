@@ -14,20 +14,17 @@ import com.codingzombies.support.ui.Component;
 public class SearchFacet extends Component {
 
     @Find(".facet__list li")
-    public List<FacetItem> items;
+    private List<FacetItem> items;
+    
+    @Find(".facet__name.js-facet-name")
+    private String name;
     
     public SearchFacet(WebDriver driver, WebElement delegate) {
         super(driver, delegate);
     }
 
     public String getName() {
-        return $(".facet__name.js-facet-name").getText().trim();
-    }
-    
-    public void click(String name) {
-        items.stream()
-            .filter(it -> it.getName().trim().equalsIgnoreCase(name))
-            .findFirst().ifPresent(it -> it.click());
+        return this.name;
     }
     
     public void click(String name, FacetItemType facetItemType) {
@@ -52,5 +49,9 @@ public class SearchFacet extends Component {
     
     public List<String> getAllAvailableFilters() {
         return items.stream().map(it -> it.getText().trim()).collect(Collectors.toList());
+    }
+    
+    public List<FacetItem> getItems() {
+        return items;
     }
 }

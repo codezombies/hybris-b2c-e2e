@@ -7,23 +7,24 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import com.codingzombies.support.Find;
+import com.codingzombies.support.Find.TransformType;
 import com.codingzombies.support.ui.Component;
 import com.codingzombies.support.ui.Link;
 
 public class Pagination extends Component {
 
+    @Find(".pagination-prev > a")
+    private Link previousPageLink;
+    
+    @Find(".pagination-next > a")
+    private Link nextPageLink;
+    
+    @Find(value = "li.active", transform = TransformType.IntegerOnly)
+    private Integer currentPage;
+
     public Pagination(WebDriver driver, WebElement delegate) {
         super(driver, delegate);
     }
-
-    @Find(".pagination-prev > a")
-    private Link previousPageLink;
-
-    @Find(".pagination-next > a")
-    private Link nextPageLink;
-
-    @Find("li.active")
-    private WebElement currentPage;
 
     public void gotoPreviousPage() {
         this.previousPageLink.click();
@@ -33,8 +34,8 @@ public class Pagination extends Component {
         this.nextPageLink.click();
     }
 
-    public String getCurrentPage() {
-        return currentPage.getText().replaceAll("\\D+", "");
+    public int getCurrentPage() {
+        return currentPage;
     }
 
     public List<String> getAvailablePages() {
