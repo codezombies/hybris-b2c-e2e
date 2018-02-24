@@ -12,4 +12,8 @@ public class Button extends EnhancedElement {
     public void submit() {
         this.click();
     }
+
+    public void getText() {
+        this.delegate.getText();
+    }
 }

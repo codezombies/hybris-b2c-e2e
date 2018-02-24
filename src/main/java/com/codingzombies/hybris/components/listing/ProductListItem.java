@@ -50,4 +50,9 @@ public class ProductListItem extends Component {
     public void clickName() {
         this.name.click();
     }
+    
+    @Override
+    public String toString() {
+        return this.name + " (" + this.price + ")";
+    }
 }

@@ -24,43 +24,43 @@ public class PageTemplate {
         return Selector.$by(selector);
     }
     
-    public WebElement $(String selector) {
+    protected WebElement $(String selector) {
         return driver.$(selector);
     }
 
-    public <T> T $(String selector, Class<T> clazz) {
+    protected <T> T $(String selector, Class<T> clazz) {
         return driver.$(selector, clazz);
     }
 
-    public List<WebElement> $$(String selector) {
+    protected List<WebElement> $$(String selector) {
         return driver.$$(selector);
     }
 
-    public <T> List<T> $$(String selector, Class<T> clazz) {
+    protected <T> List<T> $$(String selector, Class<T> clazz) {
         return driver.$$(selector, clazz);
     }
-    
-    public WebDriver getDelegate() {
+
+    protected WebDriver getDelegate() {
         return driver.getDriver();
     }
 
-    public WebDriverWait getWait() {
+    protected WebDriverWait getWait() {
         return driver.getWait();
     }
 
-    public Actions getActions() {
+    protected Actions getActions() {
         return driver.getActions();
     }
 
-    public JavascriptExecutor getJavascript() {
+    protected JavascriptExecutor getJavascript() {
         return driver.getJavascript();
     }
-    
-    public String getTitle() {
+
+    protected String getTitle() {
         return driver.getTitle();
     }
-    
-    public String getCurrentUrl() {
+
+    protected String getCurrentUrl() {
         return driver.getCurrentUrl();
     }
 }

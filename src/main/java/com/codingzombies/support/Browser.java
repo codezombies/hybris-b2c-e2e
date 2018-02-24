@@ -84,7 +84,7 @@ public final class Browser implements AutoCloseable {
     
     @SuppressWarnings("unchecked")
     public <T extends PageTemplate> T getCurrentPageTemplate() {
-        return (T) getCurrentPage().template;
+        return (T) getCurrentPage().getTemplate();
     }
     
     public <E extends WebElement> File takeScreenshot(E element) {

@@ -20,8 +20,8 @@ import com.codingzombies.support.Selector;
 
 public abstract class Page<T extends PageTemplate> implements CanTakeScreenshot {
 
-    protected EnhancedWebDriver driver;
-    public T template;
+    protected final EnhancedWebDriver driver;
+    protected final T template;
     
     @SuppressWarnings("unchecked")
     public Page(WebDriver driver) {
@@ -39,11 +39,19 @@ public abstract class Page<T extends PageTemplate> implements CanTakeScreenshot 
     public String getCurrentUrl() {
         return driver.getCurrentUrl();
     }
-    
+
+    public File getScreenshot() throws WebDriverException {
+        return driver.getScreenshotAs(OutputType.FILE);
+    }
+
+    public T getTemplate() {
+        return template;
+    }
+
     protected By $by(String selector) {
         return Selector.$by(selector);
     }
-    
+
     protected WebElement $(String selector) {
         return driver.$(selector);
     }
@@ -59,7 +67,7 @@ public abstract class Page<T extends PageTemplate> implements CanTakeScreenshot 
     protected <E> List<E> $$(String selector, Class<E> clazz) {
         return driver.$$(selector, clazz);
     }
-    
+
     protected WebDriver getDelegate() {
         return driver.getDriver();
     }
@@ -74,9 +82,5 @@ public abstract class Page<T extends PageTemplate> implements CanTakeScreenshot 
 
     protected JavascriptExecutor getJavascript() {
         return driver.getJavascript();
-    }
-    
-    public File getScreenshot() throws WebDriverException {
-        return driver.getScreenshotAs(OutputType.FILE);
     }
 }

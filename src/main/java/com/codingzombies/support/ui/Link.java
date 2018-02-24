@@ -17,4 +17,8 @@ public class Link extends EnhancedElement {
         return this.delegate.getText();
     }
 
+    @Override
+    public String toString() {
+        return getText();
+    }
 }

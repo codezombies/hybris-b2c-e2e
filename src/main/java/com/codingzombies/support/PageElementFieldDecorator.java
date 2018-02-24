@@ -22,6 +22,7 @@ import org.openqa.selenium.support.pagefactory.DefaultFieldDecorator;
 import org.openqa.selenium.support.pagefactory.ElementLocator;
 import org.openqa.selenium.support.pagefactory.internal.LocatingElementListHandler;
 
+import com.codingzombies.support.Find.TransformType;
 import com.codingzombies.support.ui.Component;
 import com.codingzombies.support.ui.EnhancedElement;
 import com.google.common.base.Suppliers;
@@ -61,16 +62,15 @@ public class PageElementFieldDecorator extends DefaultFieldDecorator {
             }
             Type listType = ((ParameterizedType) genericType).getActualTypeArguments()[0];
 
-            List<?> proxyForListLocator = proxyForListLocator(driver, (Class<?>) listType, loader, locator);
+            List<?> proxyForListLocator = proxyForListLocator(driver, find.transform(), (Class<?>) listType, loader, locator);
             return proxyForListLocator;
         }
 
         WebElement proxy = proxyForLocator(loader, locator);
-        if (String.class.isAssignableFrom(type) || Integer.class.isAssignableFrom(type)
-                || Long.class.isAssignableFrom(type) || Double.class.isAssignableFrom(type)) {
+        if (isSupportedPrimitiveType(type)) {
             return find.transform().transform(proxy.getText());
         } else if (Optional.class.isAssignableFrom(type)) {
-            return createOptionalValue(field, find, proxy);
+            return createOptionalValue(field, find, proxy, loader, locator);
         } else if (Supplier.class.isAssignableFrom(type)) {
             return createSupplierValue(field, find, proxy, loader, locator);
         }
@@ -85,78 +85,122 @@ public class PageElementFieldDecorator extends DefaultFieldDecorator {
         }
         
         Type type = ((ParameterizedType) genericType).getActualTypeArguments()[0];
-        
+        return createSupplierValue(field, find, proxy, loader, locator, type);
+    }
+    
+    private Supplier<?> createSupplierValue(Field field, Find find, WebElement proxy, ClassLoader loader, ElementLocator locator, Type type) {
         if(type instanceof Class) {
             Class<?> supplierType = (Class<?>) type;
-            if (String.class.isAssignableFrom(supplierType) || Integer.class.isAssignableFrom(supplierType)
-                    || Long.class.isAssignableFrom(supplierType) || Double.class.isAssignableFrom(supplierType)) {
+            if (isSupportedPrimitiveType(supplierType)) {
                 return Suppliers.memoize(() -> find.transform().transform(proxy.getText()));
-            } else if (Component.class.isAssignableFrom(supplierType)
-                    || EnhancedElement.class.isAssignableFrom(supplierType)
-                    || WebElement.class.isAssignableFrom(supplierType)) {
+            } 
+            else if (isSupportedComplexType(supplierType)) {
                 return Suppliers.memoize(() -> ClassSupport.newInstance(supplierType, (WebDriver) driver, proxy));
             }
         }
+        // e.g. Supplier<List<E>>, Supplier<Optional<T>>
         else if (type instanceof ParameterizedType) {
             Class<?> rawType = (Class<?>) ((ParameterizedType) type).getRawType();
-            Class<?> parameterType = (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
             if (Optional.class.isAssignableFrom(rawType)) {
-                return Suppliers.memoize(() -> createOptionalValue(field, find, proxy, parameterType));
+                Type parameterType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                return Suppliers.memoize(() -> createOptionalValue(field, find, proxy, loader, locator, parameterType));
             }
             else if (List.class.isAssignableFrom(rawType)) {
-                return Suppliers.memoize(() -> proxyForListLocator(driver, (Class<?>) parameterType, loader, locator));
+                Type parameterType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                // Suplier<List<E>> will only work if E is not a ParameterizedType, e.g. Optional
+                // Supplier<List<String>> will work but Supplier<List<Optional<String>> won't work
+                if(parameterType instanceof Class) {
+                    return Suppliers.memoize(() -> proxyForListLocator(driver, find.transform(), (Class<?>) parameterType, loader, locator));
+                }
             }
         }
         throw new IllegalArgumentException("Parameter type passed in supplier is not supported");
     }
 
-    private Optional<?> createOptionalValue(Field field, Find find, WebElement proxy) {
+    
+    
+    private Optional<?> createOptionalValue(Field field, Find find, WebElement proxy, ClassLoader loader, ElementLocator locator) {
         Type genericType = field.getGenericType();
         if (!(genericType instanceof ParameterizedType)) {
             throw new IllegalStateException("Optional does not contain a parameter type");
         }
         
-        Class<?> optionalType = (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
-        return createOptionalValue(field, find, proxy, optionalType);
+        Type type = ((ParameterizedType) genericType).getActualTypeArguments()[0];
+        return createOptionalValue(field, find, proxy, loader, locator, type);
     }
     
-    private Optional<?> createOptionalValue(Field field, Find find, WebElement proxy, Class<?> optionalType) {
-        if (String.class.isAssignableFrom(optionalType) || Integer.class.isAssignableFrom(optionalType)
-                || Long.class.isAssignableFrom(optionalType) || Double.class.isAssignableFrom(optionalType)) {
-            Object value = null;
-            try {
-                value = find.transform().transform(proxy.getText());
-            } catch (Exception e) {
-                logger.log(Level.FINE, "Optional value cannot be found: " + e.getMessage());
+    private Optional<?> createOptionalValue(Field field, Find find, WebElement proxy, ClassLoader loader, ElementLocator locator, Type type) {
+        if(type instanceof Class) {
+            Class<?> optionalType = (Class<?>) type;
+            if (isSupportedPrimitiveType(optionalType)) {
+                Object value = null;
+                try {
+                    value = find.transform().transform(proxy.getText());
+                } catch (Exception e) {
+                    logger.log(Level.FINE, "Optional value cannot be found: " + e.getMessage());
+                }
+                return Optional.ofNullable(value);
+            } else if (isSupportedComplexType(optionalType)) {
+                Object instance = null;
+                try {
+                    Method method = proxy.getClass().getMethod("getWrappedElement");
+                    instance = ClassSupport.newInstance(optionalType, (WebDriver) driver,
+                            (WebElement) method.invoke(proxy));
+                } catch (Exception e) {
+                    logger.log(Level.FINE, "Optional value cannot be found: " + e.getMessage());
+                }
+                return Optional.ofNullable(instance);
             }
-            return Optional.ofNullable(value);
-        } else if (Component.class.isAssignableFrom(optionalType)
-                || EnhancedElement.class.isAssignableFrom(optionalType)
-                || WebElement.class.isAssignableFrom(optionalType)) {
-            Object instance = null;
-            try {
-                Method method = proxy.getClass().getMethod("getWrappedElement");
-                instance = ClassSupport.newInstance(optionalType, (WebDriver) driver,
-                        (WebElement) method.invoke(proxy));
-            } catch (Exception e) {
-                logger.log(Level.FINE, "Optional value cannot be found: " + e.getMessage());
-            }
-            return Optional.ofNullable(instance);
         }
-        
-        return Optional.empty();
+        else {
+            Class<?> rawType = (Class<?>) ((ParameterizedType) type).getRawType();
+            if (Supplier.class.isAssignableFrom(rawType)) {
+                Type parameterType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                return Optional.ofNullable(createSupplierValue(field, find, proxy, loader, locator, parameterType));
+//                return Suppliers.memoize(() -> createOptionalValue(field, find, proxy, parameterType));
+            }
+            else if (List.class.isAssignableFrom(rawType)) {
+                Type parameterType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                // Optional<List<E>> will only work if E is not a ParameterizedType, e.g. Supplier
+                // Optional<List<String>> will work but Supplier<Optional<Supplier<String>> won't work
+                if(parameterType instanceof Class) {
+                    return Optional.ofNullable(proxyForListLocator(driver, find.transform(), (Class<?>) parameterType, loader, locator));
+                }
+                
+            }
+        }
+        throw new IllegalArgumentException("Parameter type passed in optional is not supported");
     }
+    
 
-    protected <T> List<T> proxyForListLocator(SearchContext searchContext, Class<T> clazz, ClassLoader loader,
-            ElementLocator locator) {
+    @SuppressWarnings("unchecked")
+    protected <T> List<T> proxyForListLocator(SearchContext searchContext, TransformType transformType, Class<T> clazz,
+            ClassLoader loader, ElementLocator locator) {
         InvocationHandler handler = new LocatingElementListHandler(locator);
-        @SuppressWarnings("unchecked")
         List<WebElement> proxy = (List<WebElement>) Proxy.newProxyInstance(loader, new Class[] { List.class }, handler);
         return proxy.stream().map(element -> {
-            return ClassSupport.newInstance(clazz, (WebDriver) searchContext, element);
+            if(isSupportedPrimitiveType(clazz)) {
+                return (T)transformType.transform(element.getText());
+            }
+            else {                
+                return ClassSupport.newInstance(clazz, (WebDriver) searchContext, element);
+            }
         }).collect(Collectors.toList());
     }
 
+    private boolean isSupportedPrimitiveType(Class<?> type) {
+        return String.class.isAssignableFrom(type) 
+                || Integer.class.isAssignableFrom(type)
+                || Long.class.isAssignableFrom(type) 
+                || Double.class.isAssignableFrom(type);
+    }
+    
+    private boolean isSupportedComplexType(Class<?> type) {
+        return Component.class.isAssignableFrom(type)
+                || EnhancedElement.class.isAssignableFrom(type)
+                || WebElement.class.isAssignableFrom(type);
+    }
+    
     private Find isFindable(Field field) {
         Annotation[] annotations = field.getAnnotations();
         if (annotations.length == 0)
