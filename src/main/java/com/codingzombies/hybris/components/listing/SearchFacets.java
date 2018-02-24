@@ -2,6 +2,7 @@ package com.codingzombies.hybris.components.listing;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.WebDriver;

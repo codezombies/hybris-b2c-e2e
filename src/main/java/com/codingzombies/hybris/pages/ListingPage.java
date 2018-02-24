@@ -1,7 +1,7 @@
 package com.codingzombies.hybris.pages;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.openqa.selenium.WebDriver;
 
@@ -29,12 +29,12 @@ public class ListingPage extends Page<DefaultTemplate> {
 
     @Find(".pagination-bar.top .pagination")
     public Pagination pagination;
-        
+            
     @Find(".product__listing.product__list .product__list--item")
-    public List<ProductListItem> products;
+    public Supplier<List<ProductListItem>> products;
  
     @Find("#product-facet")
-    public SearchFacets facets;
+    public Supplier<SearchFacets> facets;
     
     @Find(value = ".pagination-bar-results", transform = TransformType.LongOnly)
     private Long totalResults;

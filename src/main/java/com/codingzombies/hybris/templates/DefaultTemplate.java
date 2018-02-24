@@ -48,6 +48,9 @@ public class DefaultTemplate extends PageTemplate {
     @Find("#currency-selector")
     public Select currencySelector;
 
+    @Find(".ui-autocomplete")
+    public WebElement autocompleteContainer;
+    
     public void search(String text) {
         searchInput.search(text);
         searchButton.submit();
@@ -55,8 +58,6 @@ public class DefaultTemplate extends PageTemplate {
 
     public void searchAutoComplete(String text, String selector) {
         searchInput.search(text);
-
-        WebElement autocompleteContainer = $(".ui-autocomplete", WebElement.class);
         WebElement autocomplete = getWait().until(ExpectedConditions.visibilityOf(autocompleteContainer));
         autocomplete.findElement($by(selector)).click();
     }

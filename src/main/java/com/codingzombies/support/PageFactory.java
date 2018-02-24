@@ -14,21 +14,21 @@ public final class PageFactory {
     public static <T extends PageTemplate> T newPageTemplate(WebDriver driver, Class<T> clazz) {
         driver = decorate(driver);
         T template = instantiateType(driver, clazz);
-        org.openqa.selenium.support.PageFactory.initElements(new PageFieldDecorator(driver), template);
+        org.openqa.selenium.support.PageFactory.initElements(new PageElementFieldDecorator(driver), template);
         return template;
     }
 
     public static <T extends PageTemplate, P extends Page<T>> P newPage(WebDriver driver, Class<P> clazz) {
         driver = decorate(driver);
         P page = instantiateType(driver, clazz);
-        org.openqa.selenium.support.PageFactory.initElements(new PageFieldDecorator(driver), page);
+        org.openqa.selenium.support.PageFactory.initElements(new PageElementFieldDecorator(driver), page);
         return page;
     }
 
     public static <T> T newComponent(WebDriver driver, WebElement element, Class<T> clazz) {
         driver = decorate(driver);
         T component = instantiateComponent(driver, element, clazz);
-        org.openqa.selenium.support.PageFactory.initElements(new ComponentFieldDecorator(driver, element), component);
+        org.openqa.selenium.support.PageFactory.initElements(new PageElementFieldDecorator(driver, element), component);
         return component;
     }
 
