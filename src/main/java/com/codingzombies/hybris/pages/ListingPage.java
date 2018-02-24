@@ -21,9 +21,6 @@ public class ListingPage extends Page<DefaultTemplate> {
         super(driver);
     }
 
-    @Find(".breadcrumb-section .breadcrumb")
-    public Breadcrumbs breadcrumbs;
-
     @Find(".pagination-bar.top select")
     public Select sortBy;
 

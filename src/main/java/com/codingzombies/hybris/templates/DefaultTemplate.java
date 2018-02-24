@@ -1,5 +1,6 @@
 package com.codingzombies.hybris.templates;
 
+import com.codingzombies.hybris.components.Breadcrumbs;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -13,6 +14,8 @@ import com.codingzombies.support.ui.InputSearch;
 import com.codingzombies.support.ui.Link;
 import com.codingzombies.support.ui.PageTemplate;
 import com.codingzombies.support.ui.Select;
+
+import java.util.Optional;
 
 
 public class DefaultTemplate extends PageTemplate {
@@ -48,9 +51,12 @@ public class DefaultTemplate extends PageTemplate {
     @Find("#currency-selector")
     public Select currencySelector;
 
+    @Find(".breadcrumb-section .breadcrumb")
+    public Optional<Breadcrumbs> breadcrumbs;
+
     @Find(".ui-autocomplete")
     public WebElement autocompleteContainer;
-    
+
     public void search(String text) {
         searchInput.search(text);
         searchButton.submit();
