@@ -34,7 +34,7 @@ public class ListingPage extends Page<DefaultTemplate> {
     public Supplier<SearchFacets> facets;
     
     @Find(value = ".pagination-bar-results", transform = TransformType.LongOnly)
-    private Long totalResults;
+    public Long totalResults;
     
     public long getTotalResults() {
         return totalResults;

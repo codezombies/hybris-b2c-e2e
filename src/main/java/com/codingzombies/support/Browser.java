@@ -1,7 +1,9 @@
 package com.codingzombies.support;
 
 import java.io.File;
+import java.util.function.Consumer;
 
+import com.codingzombies.support.driver.DriverFactory;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -18,6 +20,18 @@ public final class Browser implements AutoCloseable {
     
     public Browser(EnhancedWebDriver driver){
         this.driver = driver;
+    }
+
+    public static Browser chrome(){
+        return new Browser(DriverFactory.chrome());
+    }
+
+    public static Browser firefox(){
+        return new Browser(DriverFactory.firefox());
+    }
+
+    public static Browser headless(){
+        return new Browser(DriverFactory.headless());
     }
 
     public void resize(String size) {
@@ -98,5 +112,9 @@ public final class Browser implements AutoCloseable {
     public <C extends CanTakeScreenshot> File takeScreenshot(C component) {
         return component.getScreenshot();
     }
-    
+
+    public void start (Consumer<Browser> consumer) {
+        consumer.accept(this);
+    }
+
 }
